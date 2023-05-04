@@ -1,65 +1,93 @@
-// NO INCLUIR LOS node_modules
-
 const express = require("express");
-//importamos en ProductManager que esta en otro archivo
 
 const app = express();
 const PORT = 8080;
 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/products/", (req, res) => {
-  const query = req.query;
-  console.log(query);
-  //if me enviaron por query el ?limit= algo, entonces solo envio esa cantidad.
-  res.json({
-    /* todos los productos hasta el limite que me piden */
-  });
-
-  //si no aclararon nada en query... entonces directo mando todos los productos
-  res.json({
-    /* todos los productos hasta el limite que me piden */
-  });
-});
-
-app.get("/products/:id", (req, res) => {
-  /* const id = req.params.id;
-  const cuadroEncontrado = cuadros.find((c) => c.id == id);
-  res.json(cuadroEncontrado); */
-});
-
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`);
+  console.log(`Example app listening http://localhost:${PORT}`);
 });
 
-//EJEMPLO DE LA CLASE
-
-/* let cuadros = [
-  { id: 10, cuadro: "real madrid", apodo: "los galacticos jajaja " },
-  { id: 11, cuadro: "tigre", apodo: "felinos" },
-  { id: 12, cuadro: "river", apodo: "el mas grande (?) (de que?)" },
-]; */
-
-/* app.get("/cuadro/:id", (req, res) => {
+let productos = [
+  {
+    id: "234514872813534",
+    name: "real madridd",
+    price: 100,
+    createdAt: 1683242395115,
+  },
+  {
+    id: "456514872813512",
+    name: "tigre",
+    price: 150,
+    createdAt: 1683242395117,
+  },
+  {
+    id: "846514872813578",
+    name: "river",
+    price: 170,
+    createdAt: 1683242395118,
+  },
+];
+//INICIO ENDPOINT PRODUCTS
+app.get("/products/:id", (req, res) => {
   const id = req.params.id;
-  const cuadroEncontrado = cuadros.find((c) => c.id == id);
-  res.json(cuadroEncontrado);
-}); */
-
-/* app.get("/cuadro", (req, res) => {
-  const query = req.query;
-  console.log(query);
-  res.send("hola query");
-}); */
-
-/* app.get("/elmejorcuadro", (req, res) => {
-  res.json({ cuadro: "boca juniors", apodo: "boquita!" });
+  const productoEncontrado = productos.find((p) => p.id == id);
+  return res.status(200).json({
+    status: "success",
+    msg: "producto encontrado",
+    data: productoEncontrado,
+  });
 });
 
-app.get("/elpeor", (req, res) => {
-  res.json({ cuadro: "real madrid", apodo: "los galacticos jajaja " });
+app.get("/products", (req, res) => {
+  return res
+    .status(200)
+    .json({ status: "success", msg: "todos los productos", data: productos });
 });
 
-app.get("/elcuadrotigre", (req, res) => {
-  res.json({ cuadro: "tigre", apodo: "los gatitos inofensivos" });
-}); */
+//BORRAR UN PRODUCTO > SI TENGO QUE PASAR EL ID
+app.delete("/products/:id", (req, res) => {
+  const id = req.params.id;
+  productos = productos.filter((p) => p.id != id);
+  return res
+    .status(200)
+    .json({ status: "success", msg: "producto eliminado", data: {} });
+});
+
+//CREAR UN PRODUCTO (NO NECESITO PASAR ID)
+app.post("/products", (req, res) => {
+  const producto = req.body;
+  producto.id = (Math.random() * 1000000000000000).toFixed(0);
+  producto.createdAt = Date.now();
+  productos.push(producto);
+  return res
+    .status(201)
+    .json({ status: "success", msg: "producto creado", data: producto });
+});
+
+//MODIFICAR UN PRODUCTO > SI TENGO QUE PASAR EL ID
+app.put("/products/:id", (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const producto = req.body;
+  const indiceEncontrado = productos.findIndex((p) => p.id == id);
+  productos[indiceEncontrado] = {
+    id: productos[indiceEncontrado].id,
+    ...producto,
+  };
+  return res.status(200).json({
+    status: "success",
+    msg: "producto modificado",
+    data: productos[indiceEncontrado],
+  });
+});
+
+//FIN ENDPOINT PRODUCTS
+
+app.get("*", (req, res) => {
+  return res
+    .status(404)
+    .json({ status: "error", msg: "no se encuentra esa ruta", data: {} });
+});

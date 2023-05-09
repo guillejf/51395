@@ -1,6 +1,5 @@
 import express from "express";
-import { pets } from "../utils.js";
-
+import { pets, uploader } from "../utils.js";
 export const petsRouter = express.Router();
 
 petsRouter.get("/:id", (req, res) => {
@@ -27,10 +26,18 @@ petsRouter.delete("/:id", (req, res) => {
     .json({ status: "success", msg: "pet borrada", data: {} });
 });
 
-petsRouter.post("/", (req, res) => {
+petsRouter.post("/", uploader.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({
+      status: "error",
+      msg: "antes suba un archivo para podercrear la pet",
+      data: {},
+    });
+  }
   const pet = req.body;
   pet.id = (Math.random() * 1000000000000000).toFixed(0);
   pet.createdAt = Date.now();
+  pet.file = req.file.filename;
   pets.push(pet);
   return res
     .status(201)
